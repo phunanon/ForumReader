@@ -8,6 +8,12 @@ assert(process.env.DISCORD_TOKEN, "DISCORD_TOKEN is required");
 const app = express();
 const client = new Client({ intents: ["GuildMessages"] });
 const port = 3000;
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Expose-Headers", "*");
+  next();
+});
 
 (async function () {
   client.once("ready", () => console.log("Discord ready"));
