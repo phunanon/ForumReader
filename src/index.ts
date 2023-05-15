@@ -1,6 +1,6 @@
 import assert from "assert";
 import dotenv from "dotenv";
-import { ChannelType, Client } from "discord.js";
+import { ChannelType, Client, Collection, Message } from "discord.js";
 import express from "express";
 dotenv.config();
 assert(process.env.DISCORD_TOKEN, "DISCORD_TOKEN is required");
@@ -52,7 +52,7 @@ app.get("/:guildId/:channelId", async (req, res) => {
   threads.threads.reverse();
   const threadsWithData = await Promise.all(
     threads.threads.map(async thread => {
-      const { id, createdTimestamp, name, ownerId } = thread;
+      const { id, createdTimestamp, name, ownerId, messageCount } = thread;
       const owner = ownerId ? await guild.members.fetch(ownerId) : null;
       const [lastMessage] = (
         await thread.messages.fetch({ limit: 1 })
@@ -61,6 +61,7 @@ app.get("/:guildId/:channelId", async (req, res) => {
         ...{ id, title: name, createdTimestamp },
         author: owner?.user.username,
         lastTimestamp: lastMessage?.createdTimestamp ?? 0,
+        messageCount,
       };
     })
   );
@@ -100,7 +101,18 @@ app.get("/:guildId/:channelId/:threadId", async (req, res) => {
     res.status(400).send("Thread is unavailable");
     return;
   }
-  const messageData = await thread.messages.fetch({ limit: 100 });
+
+  let messageData: Collection<string, Message<true>> | undefined;
+  let lastMessageId: string | undefined;
+  do {
+    const messages = await thread.messages.fetch({
+      limit: 100,
+      before: lastMessageId,
+    });
+    messageData = messageData ? messageData.concat(messages) : messages;
+    lastMessageId = messages.last()?.id;
+  } while (lastMessageId);
+
   messageData.reverse();
   const messages = messageData.map(
     ({ cleanContent, author, createdTimestamp }) => ({
