@@ -115,10 +115,11 @@ app.get("/:guildId/:channelId/:threadId", async (req, res) => {
 
   messageData.reverse();
   const messages = messageData.map(
-    ({ cleanContent, author, createdTimestamp }) => ({
+    ({ cleanContent, author, createdTimestamp, attachments }) => ({
       createdTimestamp,
       content: cleanContent,
       author: author.username,
+      attachments: attachments.map(a => a.url),
     })
   );
   res.send(messages);
