@@ -1,6 +1,6 @@
 import assert from "assert";
 import dotenv from "dotenv";
-import { ChannelType, Client, Collection, Message } from "discord.js";
+import { ChannelType, Client, Collection, Guild, Message } from "discord.js";
 import express from "express";
 dotenv.config();
 assert(process.env.DISCORD_TOKEN, "DISCORD_TOKEN is required");
@@ -53,13 +53,13 @@ app.get("/:guildId/:channelId", async (req, res) => {
   const threadsWithData = await Promise.all(
     threads.threads.map(async thread => {
       const { id, createdTimestamp, name, ownerId, messageCount } = thread;
-      const owner = ownerId ? await guild.members.fetch(ownerId) : null;
+      const owner = ownerId ? await fetchMember(guild, ownerId) : null;
       const [lastMessage] = (
         await thread.messages.fetch({ limit: 1 })
       ).values();
       return {
         ...{ id, title: name, createdTimestamp },
-        author: owner?.user.username,
+        author: owner?.user.username ?? `Unknown (${ownerId})`,
         lastTimestamp: lastMessage?.createdTimestamp ?? 0,
         messageCount,
       };
@@ -124,3 +124,11 @@ app.get("/:guildId/:channelId/:threadId", async (req, res) => {
   );
   res.send(messages);
 });
+
+const fetchMember = async (guild: Guild, username: string) => {
+  try {
+    return await guild.members.fetch(username);
+  } catch (e) {
+    return null;
+  }
+};
