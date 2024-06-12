@@ -1,18 +1,19 @@
 {
-  "name": "gpttopicbot",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "exports": "./out/index.js",
+  "name": "discordforumreader",
+  "version": "0.0.1",
+  "description": "Chiqa/HTTP Discord forum reader",
+  "scripts": {
+    "start": "node out/index.js"
+  },
   "author": "Patrick Bowen",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.8.0",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2"
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "chiqa": "file:../chiqa"
   },
   "devDependencies": {
-    "@types/express": "^4.17.17",
-    "@types/node": "^18.15.2"
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.2"
   }
 }
