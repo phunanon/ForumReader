@@ -5,10 +5,11 @@ import { ChannelType, Guild, Message as DMessage } from 'discord.js';
 import { BrokerClient, BrokerClientContext, Message as CMessage } from 'chiqa';
 
 dotenv.config();
-const { DISCORD_TOKEN, CHIQA_HOSTNAME, CHIQA_PORT } = process.env;
+const { DISCORD_TOKEN, CHIQA_HOSTNAME, CHIQA_PORT, HTTP_PREFIX } = process.env;
 assert(DISCORD_TOKEN, 'DISCORD_TOKEN is required');
 assert(CHIQA_HOSTNAME, 'CHIQA_HOSTNAME is required');
 assert(CHIQA_PORT, 'CHIQA_PORT is required');
+assert(HTTP_PREFIX, 'HTTP_PREFIX is required');
 
 const client = new Client({ intents: ['GuildMessages'] });
 
@@ -35,7 +36,9 @@ const onChiqaMessage = async (message: CMessage, ctx: BrokerClientContext) => {
   const { url } = message.payload as { url: string };
   const responseMessage = message.subMessage!;
 
-  const [_, guildId, channelId, threadId] = url.split('/');
+  const [_, prefix, guildId, channelId, threadId] = url.split('/');
+  if (prefix !== HTTP_PREFIX) return;
+
   if (!guildId || !channelId) {
     ctx.send({
       ...responseMessage,
